@@ -1,0 +1,10 @@
+{
+  "name": "Meme Loader",
+  "description": "Serve up some memes",
+  "keywords": [
+    "memes",
+    "slack",
+  ],
+  "website": "https://github.com/mike-webster/meme_loader",
+  "repository": "https://github.com/mike-webster/meme_loader"
+}
