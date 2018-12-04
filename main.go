@@ -2,8 +2,6 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -51,17 +49,13 @@ func main() {
 }
 
 func sendToSlack(cfg *config.Config) {
-	body := "{'text':'Hello, again!'}"
-	bb, err := json.Marshal(body)
+	payload := []byte(`{"text":"Hello, Again!"}`)
+
+	resp, err := http.Post(cfg.Slack.WebHook, "application/json", bytes.NewBuffer(payload))
 	if err != nil {
 		panic(err)
 	}
 
-	resp, err := http.Post(cfg.Slack.WebHook, "application/json", bytes.NewBuffer(bb))
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println("status: ", resp.Status)
+	log.Println("status: ", resp.Status)
 	//curl -X POST -H 'Content-type: application/json' --data '{"text":"Hello, World!"}' https://hooks.slack.com/services/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
 }
