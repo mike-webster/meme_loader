@@ -1,1 +1,1 @@
-web: meme-loader
+web: meme_loader
