@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/mike-webster/meme_loader/config"
 
@@ -18,6 +19,11 @@ func main() {
 
 	if cfg == nil {
 		log.Fatal("Cant parse config")
+	}
+
+	port := os.Getenv("PORT")
+	if len(port) > 1 {
+		cfg.Port = port
 	}
 
 	router := gin.New()
@@ -41,7 +47,7 @@ func main() {
 		sendToSlack(cfg)
 	})
 
-	router.Run(":" + fmt.Sprint(cfg.Port))
+	router.Run(":" + cfg.Port)
 }
 
 func sendToSlack(cfg *config.Config) {

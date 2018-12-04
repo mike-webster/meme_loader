@@ -13,7 +13,7 @@ type Config struct {
 	Keywords    []string `json:"keywords"`
 	Website     string   `json:"website"`
 	Repository  string   `json:"repository"`
-	Port        int      `json:"port" env:"PORT"`
+	Port        string   `json:"port" env:"PORT"`
 	Slack       struct {
 		WebHook string `json:"webhook"`
 	}
