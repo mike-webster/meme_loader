@@ -30,7 +30,7 @@ func main() {
 	router.Use(gin.Logger())
 
 	router.GET("/", func(c *gin.Context) {
-		c.JSON(http.StatusOK, "{'status':'ok'}")
+		c.JSON(http.StatusOK, cfg)
 	})
 
 	router.GET("/test", func(c *gin.Context) {
