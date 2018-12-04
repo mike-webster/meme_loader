@@ -7,7 +7,7 @@
   ],
   "website": "https://github.com/mike-webster/meme_loader",
   "repository": "https://github.com/mike-webster/meme_loader",
-  "port": 5000,
+  "port": "5000",
   "slack": {
     "webhook": "https://hooks.slack.com/services/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"
   }
