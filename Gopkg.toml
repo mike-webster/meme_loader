@@ -20,6 +20,12 @@
 #  name = "github.com/x/y"
 #  version = "2.4.0"
 
+[metadata.heroku]
+  root-package = "github.com/mike-webster/meme_loader"
+  go-version = "go1.10.3"
+  #install = [ "./cmd/...", "./foo" ]
+  #ensure = "false"
+  #additional-tools = ["github.com/golang-migrate/migrate"]
 
 [[constraint]]
   name = "github.com/gin-gonic/gin"
