@@ -24,10 +24,6 @@ func main() {
 		log.Fatal("Cant parse config")
 	}
 
-	port := os.Getenv("PORT")
-	if len(port) > 1 {
-		cfg.Port = port
-	}
 
 	router := gin.New()
 	router.Use(gin.Logger())
