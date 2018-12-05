@@ -125,6 +125,21 @@ func healthcheckHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, cfg)
+
+// ----------------------------------------------------------------------------
+// -------------------------- DATA --------------------------------------------
+// ----------------------------------------------------------------------------
+func getDB(cfg *config.Config) *sqlx.DB {
+	db, err := sqlx.Connect("mysql", fmt.Sprintf("%v:%v@tcp(%v:3306)/meme_loader",
+		cfg.Database.DbUser,
+		cfg.Database.DbPass,
+		cfg.Database.DbHost))
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return db
 }
 
 // ----------------------------------------------------------------------------
