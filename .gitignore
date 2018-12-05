@@ -1,0 +1,8 @@
+.DS_Store
+vendor/
+.env
+.vscode/
+bin/
+debug
+VERSION
+meme_loader
