@@ -159,12 +159,23 @@ const (
 	MeIRL
 )
 
-func (s *subreddit) String() string {
-	switch *s {
+func (s subreddit) String() string {
+	switch s {
 	case WholesomeMemes:
 		return "wholesomememes"
 	case MeIRL:
-		return "me_url"
+		return "me_irl"
+	default:
+		panic("value not setup")
+	}
+}
+
+func (s subreddit) Next() subreddit {
+	switch s {
+	case WholesomeMemes:
+		return MeIRL
+	case MeIRL:
+		return WholesomeMemes
 	default:
 		panic("value not setup")
 	}
