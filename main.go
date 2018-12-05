@@ -24,7 +24,6 @@ func main() {
 		log.Fatal("Cant parse config")
 	}
 
-
 	router := gin.New()
 	router.Use(gin.Logger())
 
@@ -124,7 +123,14 @@ func healthcheckHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, cfg)
+	db := getDB(cfg)
+	if db == nil {
+		c.JSON(http.StatusInternalServerError, `{"err":"couldn't open database"}`)
+		return
+	}
+
+	c.JSON(http.StatusOK, `{"msg":"everything ok!"}`)
+}
 
 // ----------------------------------------------------------------------------
 // -------------------------- DATA --------------------------------------------
