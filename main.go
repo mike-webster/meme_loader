@@ -14,6 +14,14 @@ import (
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/heroku/x/hmetrics/onload"
+	"github.com/jmoiron/sqlx"
+)
+
+type subreddit int
+
+const (
+	WholesomeMemes subreddit = iota
+	MeIRL
 )
 
 func main() {
