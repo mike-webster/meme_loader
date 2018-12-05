@@ -9,15 +9,14 @@ import (
 
 // Config represents all configuration values
 type Config struct {
-	Name          string   `json:"name"`
-	Description   string   `json:"description"`
-	Keywords      []string `json:"keywords"`
-	Website       string   `json:"website"`
-	Repository    string   `json:"repository"`
-	Port          string   `json:"port" env:"PORT"`
-	TrackingID    string   `json:"tracking_id"`
-	RedditSources []string `json:"sources"`
-	Database      struct {
+	Name        string   `json:"name"`
+	Description string   `json:"description"`
+	Keywords    []string `json:"keywords"`
+	Website     string   `json:"website"`
+	Repository  string   `json:"repository"`
+	Port        string   `json:"port" env:"PORT"`
+	TrackingID  string   `json:"tracking_id"`
+	Database    struct {
 		DbUser string
 		DbPass string
 		DbHost string

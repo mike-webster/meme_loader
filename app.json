@@ -11,9 +11,5 @@
   "slack": {
     "webhook": "https://hooks.slack.com/services/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"
   },
-  "tracking_id": "wyzant",
-  "sources": [
-    "wholesomememes",
-    "me_irl"    
-  ]
+  "tracking_id": "wyzant"
 }
