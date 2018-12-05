@@ -17,13 +17,6 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type subreddit int
-
-const (
-	WholesomeMemes subreddit = iota
-	MeIRL
-)
-
 func main() {
 	cfg := config.GetConfig("app.json")
 
@@ -141,6 +134,24 @@ func healthcheckHandler(c *gin.Context) {
 // ----------------------------------------------------------------------------
 // -------------------------- STRUCTS -----------------------------------------
 // ----------------------------------------------------------------------------
+
+type subreddit int
+
+const (
+	WholesomeMemes subreddit = iota
+	MeIRL
+)
+
+func (s *subreddit) String() string {
+	switch *s {
+	case WholesomeMemes:
+		return "wholesomememes"
+	case MeIRL:
+		return "me_url"
+	default:
+		panic("value not setup")
+	}
+}
 
 type slackResp struct {
 	Data slackRespData `json:"data"`
