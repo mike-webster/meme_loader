@@ -34,58 +34,6 @@ func main() {
 	router.Run(":" + cfg.Port)
 }
 
-func sendToSlack(cfg *config.Config, payload map[string]interface{}) {
-	pbytes, _ := json.Marshal(payload)
-
-	resp, err := http.Post(cfg.Slack.WebHook, "application/json", bytes.NewBuffer(pbytes))
-	if err != nil {
-		panic(err)
-	}
-
-	log.Println("status: ", resp.Status)
-	//curl -X POST -H 'Content-type: application/json' --data '{"text":"Hello, World!"}' https://hooks.slack.com/services/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
-}
-
-func getSlackPayload(path string) map[string]interface{} {
-	return map[string]interface{}{
-		"parse":         "full",
-		"response_type": "in_channel",
-		"text":          path,
-		"unfurl_media":  true,
-		"unfurl_links":  true,
-	}
-}
-
-func getNewestWholesomeMemes(limit int) slackListChildrenSlice {
-	client := &http.Client{}
-	path := fmt.Sprint("https://api.reddit.com/r/wholesomememes/new?limit=", limit)
-	req, err := http.NewRequest("POST", path, nil)
-	if err != nil {
-		panic(err)
-	}
-
-	req.Header.Add("User-Agent", "meme-loader-heroku-webbyapp-v1.0.0")
-
-	resp, err := client.Do(req)
-
-	if resp.StatusCode != http.StatusOK {
-		panic(fmt.Sprint("bad response: ", resp.Status))
-	}
-
-	var ret slackResp
-	respBytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		panic(err)
-	}
-
-	err = json.Unmarshal(respBytes, &ret)
-	if err != nil {
-		panic(err)
-	}
-
-	return ret.Data.Children
-}
-
 // ----------------------------------------------------------------------------
 // -------------------------- HANDLERS ----------------------------------------
 // ----------------------------------------------------------------------------
@@ -107,10 +55,17 @@ func sendHandler(c *gin.Context) {
 	}
 
 	cfg := config.GetConfig("app.json")
-	children := getNewestWholesomeMemes(limit)
+	sr := getNextSubreddit(cfg)
+
+	children := getNewestMeme(sr, limit)
+
+	err = setNextSubreddit(cfg, sr)
+	if err != nil {
+		panic(err)
+	}
 
 	for _, u := range children.getURLs() {
-		pl := getSlackPayload(u)
+		pl := getSlackPayload(u, sr.String())
 		log.Println(pl)
 		sendToSlack(cfg, pl)
 	}
@@ -130,6 +85,122 @@ func healthcheckHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, `{"msg":"everything ok!"}`)
+}
+
+// ----------------------------------------------------------------------------
+// -------------------------- HELPERS -----------------------------------------
+// ----------------------------------------------------------------------------
+
+func sendToSlack(cfg *config.Config, payload map[string]interface{}) {
+	pbytes, _ := json.Marshal(payload)
+
+	resp, err := http.Post(cfg.Slack.WebHook, "application/json", bytes.NewBuffer(pbytes))
+	if err != nil {
+		panic(err)
+	}
+
+	msg, _ := ioutil.ReadAll(resp.Body)
+	log.Println("status: ", resp.Status, "\nbody: ", string(msg))
+}
+
+func getSlackPayload(path, title string) map[string]interface{} {
+	atch := []map[string]interface{}{
+		map[string]interface{}{"text": title},
+	}
+	return map[string]interface{}{
+		"parse":         "full",
+		"response_type": "in_channel",
+		"text":          path,
+		"title":         title,
+		"unfurl_media":  true,
+		"unfurl_links":  true,
+		"attachments":   atch,
+	}
+}
+
+func getNewestMeme(sr subreddit, limit int) slackListChildrenSlice {
+	client := &http.Client{}
+	path := fmt.Sprintf("https://api.reddit.com/r/%v/new?limit=%v", sr.String(), limit)
+	req, err := http.NewRequest("POST", path, nil)
+	if err != nil {
+		panic(err)
+	}
+
+	req.Header.Add("User-Agent", "meme-loader-heroku-webbyapp-v1.0.0")
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		panic(fmt.Sprint("bad response: ", resp.Status))
+	}
+
+	var ret slackResp
+	respBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		panic(err)
+	}
+
+	err = json.Unmarshal(respBytes, &ret)
+	if err != nil {
+		panic(err)
+	}
+
+	return ret.Data.Children
+}
+
+func getNextSubreddit(cfg *config.Config) subreddit {
+	db := getDB(cfg)
+	defer db.Close()
+
+	res, err := db.Query(fmt.Sprintf(`SELECT subreddit FROM tracking WHERE id = '%v'`, cfg.TrackingID))
+	if err != nil {
+		panic(err)
+	}
+	defer res.Close()
+
+	subreddit := ""
+	if !res.Next() {
+		panic("no db record found")
+	}
+
+	err = res.Scan(&subreddit)
+	if err != nil {
+		panic(err)
+	}
+
+	switch subreddit {
+	case "wholesomememes":
+		return WholesomeMemes
+	case "me_irl":
+		return MeIRL
+	default:
+		panic("didn't match subreddit")
+	}
+}
+
+func setNextSubreddit(cfg *config.Config, cur subreddit) error {
+	db := getDB(cfg)
+	defer db.Close()
+
+	res, err := db.Exec(fmt.Sprintf(`UPDATE tracking SET subreddit = '%v' WHERE id = '%v'`,
+		cur.Next().String(),
+		cfg.TrackingID))
+	if err != nil {
+		return err
+	}
+
+	id, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if id < 1 {
+		log.Println("ERROR - Problem updating.")
+	}
+
+	return nil
 }
 
 // ----------------------------------------------------------------------------
